@@ -11,12 +11,10 @@ type Repository interface {
 	List() ([]Contract, error)
 }
 
-type DatabaseRepository struct {
-	Repository Repository
-}
+type DatabaseRepository struct{}
 
-func NewDatabaseRepository(r Repository) *DatabaseRepository {
-	return &DatabaseRepository{r}
+func NewDatabaseRepository() *DatabaseRepository {
+	return &DatabaseRepository{}
 }
 
 func (dbRepo *DatabaseRepository) List() ([]Contract, error) {

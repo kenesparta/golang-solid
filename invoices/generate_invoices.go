@@ -7,20 +7,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-//type Contract struct {
-//	ID          string
-//	Description string
-//	Amount      float64
-//	Periods     uint64
-//	Date        string
-//	Payments    []Payment
-//}
-//
-//type Payment struct {
-//	Date   string
-//	Amount float64
-//}
-
 type Output struct {
 	Date   string
 	Amount float64
@@ -32,15 +18,17 @@ type Input struct {
 	TypeInput string
 }
 
-type GenerateInvoices struct{}
+type GenerateInvoices struct {
+	contractRepo contract.Repository
+}
 
-func NewGenerateInvoices() *GenerateInvoices {
-	return &GenerateInvoices{}
+func NewGenerateInvoices(contractRepo contract.Repository) *GenerateInvoices {
+	return &GenerateInvoices{contractRepo: contractRepo}
 }
 
 func (gi *GenerateInvoices) Execute(input Input) ([]Output, error) {
-	dbRepo := contract.NewDatabaseRepository(nil)
-	contracts, _ := dbRepo.List()
+	// dbRepo := gi.contractRepo.List()
+	contracts, _ := gi.contractRepo.List()
 	var output []Output
 	for _, c := range contracts {
 		if input.TypeInput == "cash" {
