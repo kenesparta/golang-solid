@@ -1,21 +1,35 @@
 package invoices
 
 import (
-	"database/sql"
-	"log"
+	"github.com/kenesparta/golang-solid/contract"
+	"time"
 
 	_ "github.com/lib/pq"
 )
 
-type Contract struct {
-	ID          string
-	Description string
-	Amount      float64
-	Periods     int64
-	Date        string
-}
+//type Contract struct {
+//	ID          string
+//	Description string
+//	Amount      float64
+//	Periods     uint64
+//	Date        string
+//	Payments    []Payment
+//}
+//
+//type Payment struct {
+//	Date   string
+//	Amount float64
+//}
 
 type Output struct {
+	Date   string
+	Amount float64
+}
+
+type Input struct {
+	Month     int
+	Year      uint64
+	TypeInput string
 }
 
 type GenerateInvoices struct{}
@@ -24,32 +38,50 @@ func NewGenerateInvoices() *GenerateInvoices {
 	return &GenerateInvoices{}
 }
 
-func (gi *GenerateInvoices) Execute() []Contract {
-	connStr := "user=user dbname=user sslmode=disable password=user host=127.0.0.1 port=5432"
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		log.Fatal(err)
-	}
+func (gi *GenerateInvoices) Execute(input Input) ([]Output, error) {
+	dbRepo := contract.NewDatabaseRepository(nil)
+	contracts, _ := dbRepo.List()
+	var output []Output
+	for _, c := range contracts {
+		if input.TypeInput == "cash" {
+			for _, p := range c.Payments {
+				paymentDate, errParseDate := time.Parse(time.RFC3339, p.Date)
+				if errParseDate != nil {
+					return nil, errParseDate
+				}
 
-	defer db.Close()
-	rows, err := db.Query("SELECT id, description, amount, periods, date FROM ken.contract")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-	var contracts []Contract
-	for rows.Next() {
-		var c Contract
-		if errRow := rows.Scan(
-			&c.ID,
-			&c.Description,
-			&c.Amount,
-			&c.Periods,
-			&c.Date); errRow != nil {
-			log.Fatal(errRow)
+				if int(paymentDate.Month()) == input.Month &&
+					uint64(paymentDate.Year()) == input.Year {
+					output = append(output, Output{
+						Date:   p.Date,
+						Amount: p.Amount,
+					})
+				}
+			}
 		}
-		contracts = append(contracts, c)
+
+		if input.TypeInput == "accrual" {
+			var period uint64
+			for period <= c.Periods {
+				contractDate, errParseDate := time.Parse(time.RFC3339, c.Date)
+				if errParseDate != nil {
+					return nil, errParseDate
+				}
+
+				contractDate = contractDate.AddDate(0, int(period), 0)
+				period++
+				if int(contractDate.Month()) != input.Month ||
+					uint64(contractDate.Year()) != input.Year {
+					continue
+				}
+
+				output = append(output, Output{
+					Date:   contractDate.Format(time.RFC3339),
+					Amount: c.Amount / float64(c.Periods),
+				})
+			}
+		}
 	}
 
-	return contracts
+	return output, nil
 }
