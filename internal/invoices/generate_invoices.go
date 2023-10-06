@@ -2,8 +2,6 @@ package invoices
 
 import (
 	"github.com/kenesparta/golang-solid/internal/repository"
-	"time"
-
 	_ "github.com/lib/pq"
 )
 
@@ -27,47 +25,23 @@ func NewGenerateInvoices(contractRepo repository.Repository) *GenerateInvoices {
 }
 
 func (gi *GenerateInvoices) Execute(input Input) ([]Output, error) {
-	// dbRepo := gi.contractRepo.List()
-	contracts, _ := gi.contractRepo.List()
+	contracts, listErr := gi.contractRepo.List()
+	if listErr != nil {
+		return nil, listErr
+	}
+
 	var output []Output
 	for _, c := range contracts {
-		if input.TypeInput == "cash" {
-			for _, p := range c.Payments {
-				paymentDate, errParseDate := time.Parse(time.RFC3339, p.Date)
-				if errParseDate != nil {
-					return nil, errParseDate
-				}
-
-				if int(paymentDate.Month()) == input.Month &&
-					uint64(paymentDate.Year()) == input.Year {
-					output = append(output, Output{
-						Date:   p.Date,
-						Amount: p.Amount,
-					})
-				}
-			}
+		invoices, invErr := c.GetInvoices(input.Month, input.Year, input.TypeInput)
+		if invErr != nil {
+			return nil, invErr
 		}
 
-		if input.TypeInput == "accrual" {
-			var period uint64
-			for period <= c.Periods {
-				contractDate, errParseDate := time.Parse(time.RFC3339, c.Date)
-				if errParseDate != nil {
-					return nil, errParseDate
-				}
-
-				contractDate = contractDate.AddDate(0, int(period), 0)
-				period++
-				if int(contractDate.Month()) != input.Month ||
-					uint64(contractDate.Year()) != input.Year {
-					continue
-				}
-
-				output = append(output, Output{
-					Date:   contractDate.Format(time.RFC3339),
-					Amount: c.Amount / float64(c.Periods),
-				})
-			}
+		for _, inv := range invoices {
+			output = append(output, Output{
+				Date:   inv.Date,
+				Amount: inv.Amount,
+			})
 		}
 	}
 

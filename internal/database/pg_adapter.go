@@ -53,15 +53,14 @@ func (pga *ContractPgAdapter) QueryAll() ([]contract.Contract, error) {
 			return nil, paymentErr
 		}
 
-		var paymentsArray []contract.Payment
+		// var paymentsArray []contract.Payment
 		for paymentsRow.Next() {
 			var p contract.Payment
 			if errRow := paymentsRow.Scan(&p.Amount, &p.Date); errRow != nil {
 				return nil, errRow
 			}
-			paymentsArray = append(paymentsArray, p)
+			contracts[i].AddPayments(p)
 		}
-		contracts[i].Payments = paymentsArray
 	}
 
 	defer pga.Close()
