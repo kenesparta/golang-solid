@@ -1,7 +1,8 @@
 package invoices
 
 import (
-	"github.com/kenesparta/golang-solid/contract"
+	"github.com/kenesparta/golang-solid/internal/database"
+	"github.com/kenesparta/golang-solid/internal/repository"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"testing"
@@ -14,7 +15,11 @@ func TestAddition(t *testing.T) {
 
 var _ = Describe("generate Invoices", func() {
 	It("should generate notas fiscais", func() {
-		generateInvoices := NewGenerateInvoices(contract.NewDatabaseRepository())
+		generateInvoices := NewGenerateInvoices(
+			repository.NewDatabaseRepository(
+				database.NewContractPgAdapter(),
+			),
+		)
 		output, _ := generateInvoices.Execute(Input{
 			Month:     1,
 			Year:      2022,
@@ -27,7 +32,11 @@ var _ = Describe("generate Invoices", func() {
 
 var _ = Describe("generate Invoices", func() {
 	It("should generate notas fiscais", func() {
-		generateInvoices := NewGenerateInvoices(contract.NewDatabaseRepository())
+		generateInvoices := NewGenerateInvoices(
+			repository.NewDatabaseRepository(
+				database.NewContractPgAdapter(),
+			),
+		)
 		output, _ := generateInvoices.Execute(Input{
 			Month:     2,
 			Year:      2022,

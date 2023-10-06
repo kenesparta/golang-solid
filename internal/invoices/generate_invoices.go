@@ -1,7 +1,7 @@
 package invoices
 
 import (
-	"github.com/kenesparta/golang-solid/contract"
+	"github.com/kenesparta/golang-solid/internal/repository"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -19,10 +19,10 @@ type Input struct {
 }
 
 type GenerateInvoices struct {
-	contractRepo contract.Repository
+	contractRepo repository.Repository
 }
 
-func NewGenerateInvoices(contractRepo contract.Repository) *GenerateInvoices {
+func NewGenerateInvoices(contractRepo repository.Repository) *GenerateInvoices {
 	return &GenerateInvoices{contractRepo: contractRepo}
 }
 
