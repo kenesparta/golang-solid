@@ -1,4 +1,4 @@
-package invoices
+package usecases
 
 import (
 	"github.com/kenesparta/golang-solid/internal/repository"
@@ -32,7 +32,7 @@ func (gi *GenerateInvoices) Execute(input Input) ([]Output, error) {
 
 	var output []Output
 	for _, c := range contracts {
-		invoices, invErr := c.GetInvoices(input.Month, input.Year, input.TypeInput)
+		invoices, invErr := c.GenerateInvoices(input.Month, input.Year, input.TypeInput)
 		if invErr != nil {
 			return nil, invErr
 		}

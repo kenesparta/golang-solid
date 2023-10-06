@@ -1,4 +1,4 @@
-package invoice
+package domain
 
 type Invoice struct {
 	Date   string

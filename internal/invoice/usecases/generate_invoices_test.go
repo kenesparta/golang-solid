@@ -1,4 +1,4 @@
-package invoices
+package usecases
 
 import (
 	"github.com/kenesparta/golang-solid/internal/database"

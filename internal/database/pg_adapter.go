@@ -2,7 +2,7 @@ package database
 
 import (
 	"database/sql"
-	"github.com/kenesparta/golang-solid/internal/contract"
+	"github.com/kenesparta/golang-solid/internal/contract/domain"
 	"log"
 )
 
@@ -23,19 +23,19 @@ func NewContractPgAdapter() *ContractPgAdapter {
 	}
 }
 
-func (pga *ContractPgAdapter) Query(c *contract.Contract) (*contract.Contract, error) {
+func (pga *ContractPgAdapter) Query(c *domain.Contract) (*domain.Contract, error) {
 	return nil, nil
 }
 
-func (pga *ContractPgAdapter) QueryAll() ([]contract.Contract, error) {
+func (pga *ContractPgAdapter) QueryAll() ([]domain.Contract, error) {
 	rows, err := pga.conn.Query("SELECT id, description, amount, periods, date FROM ken.contract")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var contracts []contract.Contract
+	var contracts []domain.Contract
 	for rows.Next() {
-		var c contract.Contract
+		var c domain.Contract
 		if errRow := rows.Scan(
 			&c.ID,
 			&c.Description,
@@ -55,7 +55,7 @@ func (pga *ContractPgAdapter) QueryAll() ([]contract.Contract, error) {
 
 		// var paymentsArray []contract.Payment
 		for paymentsRow.Next() {
-			var p contract.Payment
+			var p domain.Payment
 			if errRow := paymentsRow.Scan(&p.Amount, &p.Date); errRow != nil {
 				return nil, errRow
 			}
