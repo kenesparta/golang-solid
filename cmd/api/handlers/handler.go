@@ -5,6 +5,7 @@ import (
 	"github.com/kenesparta/golang-solid/internal/database"
 	"github.com/kenesparta/golang-solid/internal/invoice/usecases"
 	"github.com/kenesparta/golang-solid/internal/repository"
+	"github.com/kenesparta/golang-solid/internal/shared/decorator"
 	"net/http"
 )
 
@@ -16,13 +17,12 @@ func ReadInvoices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	generateInvoices := usecases.NewGenerateInvoices(
-		repository.NewDatabaseRepository(
-			database.NewContractPgAdapter(),
+	generateInvoices := decorator.NewLoggerDecorator(
+		usecases.NewGenerateInvoices(
+			repository.NewDatabaseRepository(database.NewContractPgAdapter()),
+			usecases.NewJsonPresenter(),
 		),
-		usecases.NewJsonPresenter(),
 	)
-
 	output, executeErr := generateInvoices.Execute(input)
 
 	if executeErr != nil {
