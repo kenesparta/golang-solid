@@ -11,7 +11,7 @@ func NewCsvPresenter() *CsvPresenter {
 	return &CsvPresenter{}
 }
 
-func (*CsvPresenter) Present(output []Output) (string, error) {
+func (*CsvPresenter) Present(output []Output) ([]byte, error) {
 	var lines []string
 	for _, out := range output {
 		var row []string
@@ -20,5 +20,5 @@ func (*CsvPresenter) Present(output []Output) (string, error) {
 		lines = append(lines, strings.Join(row, ","))
 	}
 
-	return strings.Join(lines, "\n"), nil
+	return []byte(strings.Join(lines, "\n")), nil
 }

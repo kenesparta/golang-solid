@@ -28,7 +28,7 @@ var _ = Describe("generate Invoices", func() {
 			TypeInput: "cash",
 		})
 		var outputSer []Output
-		json.Unmarshal([]byte(output), &outputSer)
+		json.Unmarshal(output, &outputSer)
 		Expect(outputSer[0].Date).To(Equal("2022-01-05T10:00:00Z"))
 		Expect(outputSer[0].Amount).To(Equal(6000.0))
 	})
@@ -48,7 +48,7 @@ var _ = Describe("generate Invoices", func() {
 			TypeInput: "accrual",
 		})
 		var outputSer []Output
-		json.Unmarshal([]byte(output), &outputSer)
+		json.Unmarshal(output, &outputSer)
 		Expect(outputSer[0].Date).To(Equal("2022-02-01T10:00:00Z"))
 		Expect(outputSer[0].Amount).To(Equal(500.0))
 	})
@@ -68,6 +68,6 @@ var _ = Describe("generate Invoices", func() {
 			TypeInput: "cash",
 		})
 		resultCsv := `2022-01-05T10:00:00Z,6000.000000`
-		Expect(output).To(Equal(resultCsv))
+		Expect(string(output)).To(Equal(resultCsv))
 	})
 })

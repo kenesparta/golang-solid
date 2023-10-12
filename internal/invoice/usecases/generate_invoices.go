@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"github.com/kenesparta/golang-solid/internal/repository"
-	_ "github.com/lib/pq"
 )
 
 type Output struct {
@@ -28,17 +27,17 @@ func NewGenerateInvoices(
 	return &GenerateInvoices{contractRepo, presenter}
 }
 
-func (gi *GenerateInvoices) Execute(input Input) (string, error) {
+func (gi *GenerateInvoices) Execute(input Input) ([]byte, error) {
 	contracts, listErr := gi.contractRepo.List()
 	if listErr != nil {
-		return "", listErr
+		return nil, listErr
 	}
 
 	var output []Output
 	for _, c := range contracts {
 		invoices, invErr := c.GenerateInvoices(input.Month, input.Year, input.TypeInput)
 		if invErr != nil {
-			return "", invErr
+			return nil, invErr
 		}
 
 		for _, inv := range invoices {
@@ -49,10 +48,10 @@ func (gi *GenerateInvoices) Execute(input Input) (string, error) {
 		}
 	}
 
-	serialized, prestErr := gi.presenter.Present(output)
-	if prestErr != nil {
-		return "", prestErr
-	}
+	//serialized, prestErr := gi.presenter.Present(output)
+	//if prestErr != nil {
+	//	return "", prestErr
+	//}
 
-	return serialized, nil
+	return gi.presenter.Present(output)
 }

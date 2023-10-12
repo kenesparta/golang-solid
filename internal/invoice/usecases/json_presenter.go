@@ -8,10 +8,10 @@ func NewJsonPresenter() *JsonPresenter {
 	return &JsonPresenter{}
 }
 
-func (*JsonPresenter) Present(output []Output) (string, error) {
+func (*JsonPresenter) Present(output []Output) ([]byte, error) {
 	bytes, err := json.Marshal(output)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(bytes), nil
+	return bytes, nil
 }
