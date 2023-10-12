@@ -18,23 +18,27 @@ type Input struct {
 
 type GenerateInvoices struct {
 	contractRepo repository.Repository
+	presenter    Presenter
 }
 
-func NewGenerateInvoices(contractRepo repository.Repository) *GenerateInvoices {
-	return &GenerateInvoices{contractRepo: contractRepo}
+func NewGenerateInvoices(
+	contractRepo repository.Repository,
+	presenter Presenter,
+) *GenerateInvoices {
+	return &GenerateInvoices{contractRepo, presenter}
 }
 
-func (gi *GenerateInvoices) Execute(input Input) ([]Output, error) {
+func (gi *GenerateInvoices) Execute(input Input) (string, error) {
 	contracts, listErr := gi.contractRepo.List()
 	if listErr != nil {
-		return nil, listErr
+		return "", listErr
 	}
 
 	var output []Output
 	for _, c := range contracts {
 		invoices, invErr := c.GenerateInvoices(input.Month, input.Year, input.TypeInput)
 		if invErr != nil {
-			return nil, invErr
+			return "", invErr
 		}
 
 		for _, inv := range invoices {
@@ -45,5 +49,10 @@ func (gi *GenerateInvoices) Execute(input Input) ([]Output, error) {
 		}
 	}
 
-	return output, nil
+	serialized, prestErr := gi.presenter.Present(output)
+	if prestErr != nil {
+		return "", prestErr
+	}
+
+	return serialized, nil
 }
