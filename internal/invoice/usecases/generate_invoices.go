@@ -48,10 +48,5 @@ func (gi *GenerateInvoices) Execute(input Input) ([]byte, error) {
 		}
 	}
 
-	//serialized, prestErr := gi.presenter.Present(output)
-	//if prestErr != nil {
-	//	return "", prestErr
-	//}
-
 	return gi.presenter.Present(output)
 }
