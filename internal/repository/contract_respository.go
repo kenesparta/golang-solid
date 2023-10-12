@@ -6,11 +6,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Repository Persists Contracts Aggregates.Aggregates are clusters of data persistence.
-type Repository interface {
-	List() ([]domain.Contract, error)
-}
-
 type DatabaseRepository struct {
 	adapter database.Adapter[[]domain.Contract, *domain.Contract]
 }
