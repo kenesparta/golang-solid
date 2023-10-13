@@ -3,17 +3,31 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/kenesparta/golang-solid/internal/invoice/usecases"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/kenesparta/golang-solid/cmd/api/httpserver"
+	"github.com/kenesparta/golang-solid/internal/database"
+	"github.com/kenesparta/golang-solid/internal/invoice/usecases"
+	"github.com/kenesparta/golang-solid/internal/repository"
+	"github.com/kenesparta/golang-solid/internal/shared/decorator"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestHelloRoute(t *testing.T) {
-	rt := GetRouter()
+	generateInvoices := decorator.NewLoggerDecorator(
+		usecases.NewGenerateInvoices(
+			repository.NewDatabaseRepository(database.NewContractPgAdapter()),
+			usecases.NewJsonPresenter(),
+		),
+	)
+	chiAdapter := httpserver.NewChiHttpAdapter()
+	chiServer := ChiServer{}
+	chiServer.NewServer(chiAdapter, generateInvoices)
+	rt := chiAdapter.Router()
+
 	in := usecases.Input{
 		Month:     1,
 		Year:      2022,

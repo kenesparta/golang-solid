@@ -63,7 +63,6 @@ func (pga *ContractPgAdapter) QueryAll() ([]domain.Contract, error) {
 		}
 	}
 
-	defer pga.Close()
 	defer rows.Close()
 	return contracts, nil
 }

@@ -2,16 +2,22 @@ package main
 
 import (
 	"github.com/kenesparta/golang-solid/cmd/api/handlers"
-	"log"
-	"net/http"
+	"github.com/kenesparta/golang-solid/cmd/api/httpserver"
+	"github.com/kenesparta/golang-solid/internal/database"
+	"github.com/kenesparta/golang-solid/internal/invoice/usecases"
+	"github.com/kenesparta/golang-solid/internal/repository"
+	"github.com/kenesparta/golang-solid/internal/shared/decorator"
 )
 
 func main() {
-	r := handlers.GetRouter()
-
-	err := http.ListenAndServe(":8080", r)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+	generateInvoices := decorator.NewLoggerDecorator(
+		usecases.NewGenerateInvoices(
+			repository.NewDatabaseRepository(database.NewContractPgAdapter()),
+			usecases.NewJsonPresenter(),
+		),
+	)
+	chiAdapter := httpserver.NewChiHttpAdapter()
+	chiServer := handlers.ChiServer{}
+	chiServer.NewServer(chiAdapter, generateInvoices)
+	chiAdapter.Listen(8080)
 }

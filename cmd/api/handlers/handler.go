@@ -2,14 +2,20 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/kenesparta/golang-solid/internal/database"
-	"github.com/kenesparta/golang-solid/internal/invoice/usecases"
-	"github.com/kenesparta/golang-solid/internal/repository"
-	"github.com/kenesparta/golang-solid/internal/shared/decorator"
+	"github.com/go-chi/chi/v5"
 	"net/http"
+
+	"github.com/kenesparta/golang-solid/cmd/api/httpserver"
+	"github.com/kenesparta/golang-solid/internal/invoice/usecases"
+	"github.com/kenesparta/golang-solid/internal/shared/decorator"
 )
 
-func ReadInvoices(w http.ResponseWriter, r *http.Request) {
+type MainController struct {
+	Usecase decorator.UseCase[usecases.Input]
+	Adapter httpserver.HttpServerAdapter[*chi.Mux]
+}
+
+func (mc *MainController) ReadInvoices(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var input usecases.Input
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -17,18 +23,12 @@ func ReadInvoices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	generateInvoices := decorator.NewLoggerDecorator(
-		usecases.NewGenerateInvoices(
-			repository.NewDatabaseRepository(database.NewContractPgAdapter()),
-			usecases.NewJsonPresenter(),
-		),
-	)
-	output, executeErr := generateInvoices.Execute(input)
-
+	output, executeErr := mc.Usecase.Execute(input)
 	if executeErr != nil {
 		http.Error(w, "Failed execution", http.StatusInternalServerError)
 		return
 	}
+
 	var outputSer []usecases.Output
 	unmErr := json.Unmarshal(output, &outputSer)
 	if unmErr != nil {
